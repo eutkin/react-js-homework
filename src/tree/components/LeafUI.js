@@ -1,4 +1,4 @@
-import {TreeContext} from "../contexts/tree-context";
+import {TreeContext} from "../context/tree-context";
 import {useContext} from "react";
 
 export function LeafUI({leaf}) {

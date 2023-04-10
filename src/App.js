@@ -1,8 +1,14 @@
 import logo from './logo.svg';
 import './App.css';
-import {TreeUI} from "./components/TreeUI";
+import {NodeUI} from "./tree/components/NodeUI";
+import {useReducer, useState} from "react";
+import {Node, SINGLE_NODE} from "./tree/state/Node";
+import {TreeUI} from "./tree/components/TreeUI";
+
+const initialState = new Node()
 
 function App() {
+
 
 
     return (
