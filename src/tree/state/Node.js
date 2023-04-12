@@ -4,17 +4,24 @@ export class Node {
 
     #children
 
-    constructor(children = []) {
-        this.#children = children
+    #version
+
+    id
+
+    #childMap
+
+    constructor(id, version, children, childMap) {
+        this.id = id || Math.floor(Math.random() * 100_000_000)
+        this.#version = version || 0
+        this.#children = children || []
+        this.#childMap = {...(childMap || {}), [this.id]: this}
     }
 
-    lastNode() {
-        let filter = this.#children.filter(child => child instanceof Node);
-        return filter[filter.length - 1]
-    }
-
-    addChild(child) {
-        return new Node([...this.#children, child])
+    addChild(id, updateNode) {
+        let currentNode = this.deepCopy();
+        updateNode(currentNode.#childMap[id])
+        currentNode.#version++
+        return new Node(currentNode.id, currentNode.#version, currentNode.#children, currentNode.#childMap)
     }
 
     map(mapFunction) {
@@ -25,14 +32,22 @@ export class Node {
         return this.#children.length === 0
     }
 
-    lastIndex() {
-        return this.#children.length - 1
+    addLeaf() {
+        const leaf = new Leaf("hello");
+        this.#children.push(leaf)
+        this.#childMap[leaf.id] = leaf
+        this.#version++
+        return this
     }
 
-    addLeaf() {
-        return new Node([
-            ...this.#children, new Leaf("hello")
-        ])
+    addNode() {
+        let node = new Node().addLeaf()
+        this.#children.push(node)
+        this.#childMap[node.id] = node
+        this.#childMap = {...this.#childMap, ...node.#childMap}
+        this.#version++
+        return this
+
     }
 
     removeLeaf(leafId) {
@@ -45,12 +60,34 @@ export class Node {
         return new Node(copy)
     }
 
-    addNode() {
-        return new Node([
-            ...this.#children,
-            new Node([new Leaf("hello")])
-        ])
+    deepCopy() {
+        const children = this.#children.map(child => {
+            if (child instanceof Leaf) {
+                return new Leaf(child.content, child.id)
+            }
+            return child.deepCopy()
+        })
+        const childMap = flatten(children).reduce((acc, element) => ({...acc, [element.id]: element}), {})
+        return new Node(this.id, this.#version, children, childMap)
+    }
+
+    children() {
+        return this.#children
     }
 }
 
-export const SINGLE_NODE = new Node([new Leaf("hello")])
+export const SINGLE_NODE = new Node(null, null).addLeaf()
+
+function flatten(children) {
+    const result = []
+    children.forEach(child => {
+            if (child instanceof Leaf) {
+                result.push(child)
+                return
+            }
+            result.push(child)
+            result.push(...flatten(child.children()))
+        }
+    )
+    return result
+}

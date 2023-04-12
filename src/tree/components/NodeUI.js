@@ -2,32 +2,12 @@
 
 import {LeafUI} from "./LeafUI";
 import {Leaf} from '../state/Leaf';
-import React, {useReducer, useState} from "react";
+import React from "react";
 
 
-function NodeUI({isRoot, initialNode, onChange, level}) {
+function NodeUI({isRoot, node, onChange, level}) {
 
-    const [currentNode, dispatch] = useReducer((node, action) => {
-            switch (action.type) {
-                case 'addLeaf':
-                    return node.addLeaf();
-
-                case 'addNode' :
-                    return node.addNode();
-
-                default:
-                    return node
-            }
-        },
-        initialNode
-    )
-
-
-    let currentLevel = level || 0
-
-    console.log("NodeUI", currentLevel, currentNode)
-
-    if (currentNode.isEmpty()) {
+    if (node.isEmpty()) {
         if (isRoot) { // it's root node, and we must have any button for add leaf
             return renderLastLineButton()
         }
@@ -36,23 +16,19 @@ function NodeUI({isRoot, initialNode, onChange, level}) {
 
     return [
         <ButtonUI text={'+'} onClick={() => {
-            onChange({type: 'addLeaf'})
-            dispatch({type: 'addLeaf'})
-
+            onChange({type: 'addLeaf', id: node.id})
         }}/>,
         <ButtonUI text={'++'} onClick={() => {
-            onChange({type: 'addNode'})
-            dispatch({type: 'addNode'})
+            onChange({type: 'addNode', id: node.id})
         }}/>,
-        <ul>
+        <ul id = {node.id}>
             {
-                currentNode
+                node
                     .map((child) => {
                         if (child instanceof Leaf) {
                             return renderLeaf(child)
                         }
-                        return <NodeUI isRoot={false} initialNode={child} onChange={dispatch} level={currentLevel + 1}/>
-
+                        return <NodeUI isRoot={false} node={child} onChange={onChange} level={level + 1}/>
                     })
             }
         </ul>,
@@ -63,7 +39,7 @@ function NodeUI({isRoot, initialNode, onChange, level}) {
 
 
 function renderLeaf(child) {
-    return <li key={child.id}><LeafUI leaf={child}/></li>
+    return <li key={child.id} id = {child.id}><LeafUI leaf={child}/></li>
 }
 
 function renderNode(child, onChange) {

@@ -1,5 +1,5 @@
 import {useReducer} from "react";
-import {SINGLE_NODE} from "../state/Node";
+import {Node, SINGLE_NODE} from "../state/Node";
 import {NodeUI} from "./NodeUI";
 
 const TreeUI = () => {
@@ -7,10 +7,10 @@ const TreeUI = () => {
     const [node, dispatch] = useReducer((node, action) => {
         switch (action.type) {
             case 'addLeaf':
-                return node.addLeaf();
+                return node.addChild(action.id, node => node.addLeaf())
 
             case 'addNode' :
-                return node.addNode();
+                return node.addChild(action.id, node => node.addNode())
 
             default:
                 return node
@@ -19,7 +19,7 @@ const TreeUI = () => {
 
     console.log("TreeUI", node)
 
-    return <NodeUI isRoot={true} initialNode={node} onChange={dispatch}/>
+    return <NodeUI isRoot={true} node={node} onChange={dispatch} level={0}/>
 }
 
 export {TreeUI}
